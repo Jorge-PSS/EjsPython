@@ -1,4 +1,4 @@
-"""Módulo 2 - Práctica 2, parte A: adivina el número."""
+"""Módulo 2 - Práctica 2, parte A: adivina el número (Ampliación)."""
 
 import random
 
@@ -67,10 +67,62 @@ def jugar(secreto: int, max_intentos: int = MAX_INTENTOS) -> bool:
     return False
 
 
+"""==========================================="""
+"""             Ampliación Opcional           """
+"""==========================================="""
+
+
+def jugar_ordenador(
+    minimo: int = MINIMO,
+    maximo: int = MAXIMO,
+    max_intentos: int = MAX_INTENTOS,
+) -> bool:
+    """El ordenador intenta adivinar un número pensado por el usuario."""
+    print(f"Piensa un número entre {minimo} y {maximo}.")
+    bajo = minimo
+    alto = maximo
+    intentos_usados = 0
+
+    while bajo <= alto and intentos_usados < max_intentos:
+        intentos_usados += 1
+        propuesta = (bajo + alto) // 2
+        respuesta = input(
+            f"Intento {intentos_usados} de {max_intentos}: ¿Es {propuesta}? "
+            "(acierto / mayor / menor): "
+        ).strip().lower()
+
+        if respuesta in ("acierto", "=", "si", "sí"):
+            print(f"¡Lo adiviné en {intentos_usados} intentos!")
+            return True
+        if respuesta in ("mayor", ">", "+"):
+            bajo = propuesta + 1
+        elif respuesta in ("menor", "<", "-"):
+            alto = propuesta - 1
+        else:
+            print("Responde con 'acierto', 'mayor' o 'menor'.")
+            intentos_usados -= 1
+
+    print("No he podido adivinarlo. ¿Seguro que no cambiaste de número?")
+    return False
+
+
 def main() -> None:
-    """Genera un número secreto al azar y lanza una partida."""
-    secreto = random.randint(MINIMO, MAXIMO)
-    jugar(secreto)
+    """Permite elegir modo de juego y repetir partidas."""
+    while True:
+        print("\n--- Adivina el número ---")
+        print("1. Adivinas tú")
+        print("2. Adivina el ordenador")
+        modo = input("Elige un modo (1-2): ").strip()
+
+        if modo == "2":
+            jugar_ordenador()
+        else:
+            secreto = random.randint(MINIMO, MAXIMO)
+            jugar(secreto)
+
+        otra = input("¿Quieres jugar otra vez? (s/n): ").strip().lower()
+        if otra not in ("s", "si", "sí"):
+            break
 
 
 if __name__ == "__main__":

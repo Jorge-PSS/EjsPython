@@ -1,4 +1,4 @@
-"""Módulo 2 - Práctica 2, parte B: calculadora de nómina."""
+"""Módulo 2 - Práctica 2, parte B: calculadora de nómina (Ampliación)."""
 
 SEGURIDAD_SOCIAL = 6.35
 PAGAS = 12
@@ -71,7 +71,7 @@ def tipo_efectivo(bruto_anual: float) -> float:
     return round(calcular_irpf(bruto_anual) / bruto_anual * 100, 2)
 
 
-def formatear_nomina(bruto_anual: float) -> str:
+def formatear_nomina(bruto_anual: float, pagas: int = PAGAS) -> str:
     """Devuelve el resumen de la nómina en cinco líneas alineadas.
 
     >>> print(formatear_nomina(30000))
@@ -84,7 +84,7 @@ def formatear_nomina(bruto_anual: float) -> str:
     irpf = calcular_irpf(bruto_anual)
     ss = calcular_seguridad_social(bruto_anual)
     neto_anual = calcular_neto_anual(bruto_anual)
-    neto_mensual = round(neto_anual / PAGAS, 2)
+    neto_mensual = round(neto_anual / pagas, 2)
     etiqueta_irpf = f"IRPF ({tipo_efectivo(bruto_anual):.2f} %)"
 
     lineas = [
@@ -98,7 +98,7 @@ def formatear_nomina(bruto_anual: float) -> str:
 
 
 def main() -> None:
-    """Pide el salario bruto anual y muestra la nómina."""
+    """Pide el salario bruto anual y el número de pagas y muestra la nómina."""
     entrada = input("Salario bruto anual: ").strip()
     try:
         bruto = float(entrada)
@@ -110,7 +110,19 @@ def main() -> None:
         print("Importe no válido")
         return
 
-    print(formatear_nomina(bruto))
+    """==========================================="""
+    """           Ampliación Opcional             """
+    """==========================================="""
+    entrada_pagas = input("Número de pagas (12 o 14) [12]: ").strip()
+    if not entrada_pagas:
+        pagas = PAGAS
+    elif entrada_pagas in ("12", "14"):
+        pagas = int(entrada_pagas)
+    else:
+        print("Número de pagas no válido")
+        return
+
+    print(formatear_nomina(bruto, pagas=pagas))
 
 
 if __name__ == "__main__":
