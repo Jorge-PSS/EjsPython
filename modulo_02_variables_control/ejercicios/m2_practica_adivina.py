@@ -1,4 +1,4 @@
-"""Módulo 2 - Práctica 2, parte A: adivina el número (Ampliación)."""
+"""Módulo 2 - Práctica 2, parte A: adivina el número."""
 
 import random
 
@@ -67,8 +67,14 @@ def jugar(secreto: int, max_intentos: int = MAX_INTENTOS) -> bool:
     return False
 
 
+def main() -> None:
+    """Genera un número secreto al azar y lanza una partida."""
+    secreto = random.randint(MINIMO, MAXIMO)
+    jugar(secreto)
+
+
 """==========================================="""
-"""             Ampliación Opcional           """
+"""Ampliación Opcional"""
 """==========================================="""
 
 
@@ -106,7 +112,7 @@ def jugar_ordenador(
     return False
 
 
-def main() -> None:
+def main_ampliado() -> None:
     """Permite elegir modo de juego y repetir partidas."""
     while True:
         print("\n--- Adivina el número ---")
@@ -126,4 +132,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_ampliado()

@@ -1,4 +1,4 @@
-"""Módulo 2 - Práctica 2, parte B: calculadora de nómina (Ampliación)."""
+"""Módulo 2 - Práctica 2, parte B: calculadora de nómina."""
 
 SEGURIDAD_SOCIAL = 6.35
 PAGAS = 12
@@ -98,7 +98,7 @@ def formatear_nomina(bruto_anual: float, pagas: int = PAGAS) -> str:
 
 
 def main() -> None:
-    """Pide el salario bruto anual y el número de pagas y muestra la nómina."""
+    """Pide el salario bruto anual y muestra la nómina."""
     entrada = input("Salario bruto anual: ").strip()
     try:
         bruto = float(entrada)
@@ -110,9 +110,27 @@ def main() -> None:
         print("Importe no válido")
         return
 
-    """==========================================="""
-    """           Ampliación Opcional             """
-    """==========================================="""
+    print(formatear_nomina(bruto))
+
+
+"""==========================================="""
+"""Ampliación Opcional"""
+"""==========================================="""
+
+
+def main_ampliado() -> None:
+    """Pide el salario bruto anual y el número de pagas y muestra la nómina."""
+    entrada_bruto = input("Salario bruto anual: ").strip()
+    try:
+        bruto = float(entrada_bruto)
+    except ValueError:
+        print("Importe no válido")
+        return
+
+    if bruto <= 0:
+        print("Importe no válido")
+        return
+
     entrada_pagas = input("Número de pagas (12 o 14) [12]: ").strip()
     if not entrada_pagas:
         pagas = PAGAS
@@ -126,4 +144,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_ampliado()
