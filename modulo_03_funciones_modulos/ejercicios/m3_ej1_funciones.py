@@ -13,7 +13,7 @@ def area_circulo(radio: float) -> float:
     >>> area_circulo(1)
     3.14
     """
-    raise NotImplementedError
+    return round(math.pi * radio ** 2, 2)
 
 
 def area_rectangulo(base: float, altura: float) -> float:
@@ -22,7 +22,7 @@ def area_rectangulo(base: float, altura: float) -> float:
     >>> area_rectangulo(3, 4)
     12
     """
-    raise NotImplementedError
+    return base * altura
 
 
 def area_triangulo(base: float, altura: float) -> float:
@@ -31,7 +31,7 @@ def area_triangulo(base: float, altura: float) -> float:
     >>> area_triangulo(3, 4)
     6.0
     """
-    raise NotImplementedError
+    return (base * altura) / 2
 
 
 def calcular_area(figura: str, *, radio=None, base=None, altura=None):
@@ -48,7 +48,21 @@ def calcular_area(figura: str, *, radio=None, base=None, altura=None):
     >>> calcular_area("triangulo", base=3) is None
     True
     """
-    raise NotImplementedError
+    match figura.strip().lower():
+        case "circulo":
+            if radio is None:
+                return None
+            return area_circulo(radio)
+        case "rectangulo":
+            if base is None or altura is None:
+                return None
+            return area_rectangulo(base, altura)
+        case "triangulo":
+            if base is None or altura is None:
+                return None
+            return area_triangulo(base, altura)
+        case _:
+            return None
 
 
 def minimo_y_maximo(*numeros):
@@ -61,7 +75,9 @@ def minimo_y_maximo(*numeros):
     >>> minimo_y_maximo()
     (None, None)
     """
-    raise NotImplementedError
+    if not numeros:
+        return (None, None)
+    return (min(numeros), max(numeros))
 
 
 def describir(funcion) -> str:
@@ -72,4 +88,8 @@ def describir(funcion) -> str:
     >>> describir(area_rectangulo)
     'area_rectangulo: Devuelve el área de un rectángulo.'
     """
-    raise NotImplementedError
+    nombre = funcion.__name__
+    if not funcion.__doc__:
+        return f"{nombre}: sin documentar"
+    primera_linea = funcion.__doc__.strip().splitlines()[0].strip()
+    return f"{nombre}: {primera_linea}"
