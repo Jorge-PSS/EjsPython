@@ -1,5 +1,7 @@
 """Módulo 6 - Ejercicio 3: excepciones."""
 
+from pathlib import Path
+
 
 def a_entero(texto, por_defecto=None):
     """Convierte a entero con ``int()``. Si no se puede, devuelve ``por_defecto``.
@@ -10,7 +12,10 @@ def a_entero(texto, por_defecto=None):
     >>> a_entero("42"), a_entero("abc"), a_entero(None, 0)
     (42, None, 0)
     """
-    raise NotImplementedError
+    try:
+        return int(texto)
+    except (ValueError, TypeError):
+        return por_defecto
 
 
 def dividir(a: float, b: float) -> float | None:
@@ -18,28 +23,53 @@ def dividir(a: float, b: float) -> float | None:
 
     Solo captura la división por cero: cualquier otro error tiene que subir.
     """
-    raise NotImplementedError
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return None
 
 
 def leer_o_vacio(ruta) -> str:
     """Devuelve el contenido del fichero, o la cadena vacía si no existe."""
-    raise NotImplementedError
+    try:
+        with Path(ruta).open(mode="r", encoding="utf-8") as fichero:
+            return fichero.read()
+    except FileNotFoundError:
+        return ""
 
 
 def validar_edad(edad) -> int:
     """Devuelve la edad si es válida y, si no, lanza una excepción.
 
-    - ``TypeError`` si no es un ``int`` (un ``bool`` tampoco vale).
-    - ``ValueError`` si no está entre 0 y 130, ambos incluidos. El mensaje
+- ``TypeError`` si no es un ``int`` (un ``bool`` tampoco vale).
+- ``ValueError`` si no está entre 0 y 130, ambos incluidos. El mensaje
       tiene que contener el valor recibido.
 
     >>> validar_edad(36)
     36
     """
-    raise NotImplementedError
+    if isinstance(edad, bool) or not isinstance(edad, int):
+        raise TypeError(f"La edad debe ser un entero, no {type(edad).__name__}: {edad!r}")
+    if not 0 <= edad <= 130:
+        raise ValueError(f"Edad fuera de rango (0-130): {edad}")
+    return edad
 
 
-# TODO: define aquí las excepciones ErrorDeCuenta, ImporteNoValido y SaldoInsuficiente
+class ErrorDeCuenta(Exception):
+    """Excepción base para errores relacionados con operaciones de cuenta."""
+
+
+class ImporteNoValido(ErrorDeCuenta):
+    """Se lanza cuando el importe de la operación no es positivo."""
+
+
+class SaldoInsuficiente(ErrorDeCuenta):
+    """Se lanza cuando el importe supera el saldo disponible."""
+
+    def __init__(self, saldo: float, importe: float) -> None:
+        super().__init__(f"Saldo insuficiente ({saldo}) para retirar {importe}")
+        self.saldo = saldo
+        self.importe = importe
 
 
 def retirar(saldo: float, importe: float) -> float:
@@ -51,7 +81,11 @@ def retirar(saldo: float, importe: float) -> float:
     >>> retirar(100, 30)
     70
     """
-    raise NotImplementedError
+    if importe <= 0:
+        raise ImporteNoValido(f"El importe debe ser positivo: {importe}")
+    if importe > saldo:
+        raise SaldoInsuficiente(saldo, importe)
+    return saldo - importe
 
 
 def convertir_todos(textos: list[str]) -> tuple[list[float], list[str]]:
@@ -63,7 +97,14 @@ def convertir_todos(textos: list[str]) -> tuple[list[float], list[str]]:
     >>> convertir_todos(["1.5", "x", "2"])
     ([1.5, 2.0], ['x'])
     """
-    raise NotImplementedError
+    numeros: list[float] = []
+    rechazados: list[str] = []
+    for texto in textos:
+        try:
+            numeros.append(float(texto))
+        except (ValueError, TypeError):
+            rechazados.append(texto)
+    return numeros, rechazados
 
 
 def ejecutar(accion, registro: list[str]):
@@ -74,10 +115,21 @@ def ejecutar(accion, registro: list[str]):
     devuelva la acción. Si la acción falla, la excepción tiene que seguir
     subiendo después de anotar "error" y "fin".
     """
-    raise NotImplementedError
+    registro.append("inicio")
+    try:
+        resultado = accion()
+    except Exception:
+        registro.append("error")
+        raise
+    else:
+        registro.append("ok")
+        return resultado
+    finally:
+        registro.append("fin")
 
 
-# TODO: define aquí la excepción ErrorDeConfiguracion
+class ErrorDeConfiguracion(Exception):
+    """Se lanza cuando la configuración carece de un parámetro o su valor no es válido."""
 
 
 def puerto_configurado(configuracion: dict) -> int:
@@ -90,4 +142,10 @@ def puerto_configurado(configuracion: dict) -> int:
     >>> puerto_configurado({"puerto": "8080"})
     8080
     """
-    raise NotImplementedError
+    try:
+        valor = configuracion["puerto"]
+        if isinstance(valor, bool):
+            raise ValueError("Un booleano no es un puerto válido")
+        return int(valor)
+    except (KeyError, ValueError, TypeError) as exc:
+        raise ErrorDeConfiguracion("Configuración de puerto inválida o ausente") from exc
