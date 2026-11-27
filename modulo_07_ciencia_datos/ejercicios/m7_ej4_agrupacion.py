@@ -9,7 +9,7 @@ import pandas as pd
 
 def importe_por(df: pd.DataFrame, columna: str) -> pd.Series:
     """Devuelve el importe total por cada valor de ``columna``, de mayor a menor."""
-    raise NotImplementedError
+    return df.groupby(columna)["importe"].sum().sort_values(ascending=False)
 
 
 def cuota(df: pd.DataFrame, columna: str) -> pd.Series:
@@ -17,25 +17,37 @@ def cuota(df: pd.DataFrame, columna: str) -> pd.Series:
 
     De mayor a menor y redondeado a un decimal. La suma es 100, salvo redondeo.
     """
-    raise NotImplementedError
+    totales = importe_por(df, columna)
+    total_general = totales.sum()
+    if total_general == 0:
+        return (totales * 0.0).round(1)
+    return ((totales / total_general) * 100).round(1)
 
 
 def resumen_por_vendedor(df: pd.DataFrame) -> pd.DataFrame:
     """Devuelve una fila por vendedor con las columnas ventas, unidades, importe y ticket_medio.
 
-    - ``ventas``: número de ventas.
-    - ``unidades``: unidades vendidas.
-    - ``importe``: importe total.
-    - ``ticket_medio``: importe medio por venta, redondeado a dos decimales.
+- ``ventas``: número de ventas.
+- ``unidades``: unidades vendidas.
+- ``importe``: importe total.
+- ``ticket_medio``: importe medio por venta, redondeado a dos decimales.
 
     El índice es el vendedor y las filas van de mayor a menor importe.
     """
-    raise NotImplementedError
+    resumen = df.groupby("vendedor").agg(
+        ventas=("importe", "count"),
+        unidades=("unidades", "sum"),
+        importe=("importe", "sum"),
+        ticket_medio=("importe", "mean"),
+    )
+    resumen["ticket_medio"] = resumen["ticket_medio"].round(2)
+    return resumen.sort_values(by="importe", ascending=False)
 
 
 def importe_mensual(df: pd.DataFrame) -> pd.Series:
     """Devuelve el importe total de cada mes. El índice es el mes como texto "AAAA-MM", en orden."""
-    raise NotImplementedError
+    meses = pd.to_datetime(df["fecha"]).dt.strftime("%Y-%m")
+    return df.groupby(meses)["importe"].sum().sort_index()
 
 
 def tabla_region_categoria(df: pd.DataFrame) -> pd.DataFrame:
@@ -43,7 +55,14 @@ def tabla_region_categoria(df: pd.DataFrame) -> pd.DataFrame:
 
     Las combinaciones sin ventas valen 0.
     """
-    raise NotImplementedError
+    return pd.pivot_table(
+        df,
+        values="importe",
+        index="region",
+        columns="categoria",
+        aggfunc="sum",
+        fill_value=0,
+    )
 
 
 def producto_estrella(df: pd.DataFrame) -> pd.Series:
@@ -51,7 +70,14 @@ def producto_estrella(df: pd.DataFrame) -> pd.Series:
 
     El índice es la categoría y el valor el nombre del producto.
     """
-    raise NotImplementedError
+    por_producto = df.groupby(["categoria", "producto"])["unidades"].sum()
+    return (
+        por_producto.sort_values(ascending=False)
+        .groupby(level="categoria")
+        .head(1)
+        .reset_index(level="producto")["producto"]
+        .sort_index()
+    )
 
 
 def con_objetivos(resumen: pd.DataFrame, objetivos: pd.DataFrame) -> pd.DataFrame:
@@ -61,8 +87,13 @@ def con_objetivos(resumen: pd.DataFrame, objetivos: pd.DataFrame) -> pd.DataFram
     las columnas vendedor y objetivo. El resultado conserva el orden y el índice
     de ``resumen`` y añade las columnas:
 
-    - ``objetivo``: el objetivo del vendedor. Ausente si no tiene.
-    - ``cumplimiento``: importe entre objetivo, en porcentaje con un decimal.
-    - ``cumplido``: ``True`` si el importe alcanza el objetivo.
+- ``objetivo``: el objetivo del vendedor. Ausente si no tiene.
+- ``cumplimiento``: importe entre objetivo, en porcentaje con un decimal.
+- ``cumplido``: ``True`` si el importe alcanza el objetivo.
     """
-    raise NotImplementedError
+    resultado = resumen.copy()
+    mapa_objetivos = objetivos.set_index("vendedor")["objetivo"]
+    resultado["objetivo"] = resultado.index.map(mapa_objetivos)
+    resultado["cumplimiento"] = ((resultado["importe"] / resultado["objetivo"]) * 100).round(1)
+    resultado["cumplido"] = resultado["importe"] >= resultado["objetivo"]
+    return resultado
